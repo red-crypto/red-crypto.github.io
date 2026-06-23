@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <title>LIFE RPG Planner</title>
+  <style>
+    :root{
+      --bg:#0f172a;--panel:#14213b;--panel2:#0b1224;--line:rgba(148,163,184,.18);
+      --text:#e5edf7;--muted:#8ea0b8;--green:#10b981;--blue:#38bdf8;--amber:#fbbf24;--red:#ef4444;--violet:#a78bfa;
+      --radius:8px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+    body{
+      background-image:radial-gradient(ellipse at 18% 12%,rgba(16,185,129,.13),transparent 36%),radial-gradient(ellipse at 86% 70%,rgba(56,189,248,.12),transparent 42%);
+      overflow-x:hidden;
+    }
+    button,input,select,textarea{font:inherit}
+    button{border:0;cursor:pointer;color:inherit}
+    .app{width:min(1120px,100%);margin:0 auto;padding:14px 14px 94px;position:relative;z-index:1}
+    .top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:12px}
+    .brand{font-weight:900;letter-spacing:.08em;font-size:20px;color:var(--green);text-shadow:0 0 16px rgba(16,185,129,.35)}
+    .sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+    .iconbtn,.navbtn{width:38px;height:38px;border-radius:var(--radius);background:rgba(15,23,42,.74);border:1px solid rgba(56,189,248,.22);display:grid;place-items:center}
+    .iconbtn:active,.navbtn:active,.btn:active{transform:translateY(1px)}
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-bottom:12px}
+    .panel{background:linear-gradient(135deg,rgba(20,33,59,.94),rgba(11,18,36,.94));border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 16px 40px rgba(0,0,0,.2)}
+    .profile{padding:14px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+    .avatar{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:grid;place-items:center;font-size:26px;font-weight:900;color:white;box-shadow:0 0 24px rgba(16,185,129,.25)}
+    .levelrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .level{font-weight:900;font-size:24px}
+    .rank{font-size:12px;font-weight:800;padding:4px 8px;border-radius:999px;background:rgba(251,191,36,.14);color:var(--amber);border:1px solid rgba(251,191,36,.28)}
+    .hero-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+    .nameplate{font-size:12px;font-weight:900;padding:4px 8px;border-radius:999px;background:rgba(56,189,248,.12);color:#bae6fd;border:1px solid rgba(56,189,248,.24)}
+    .motto{font-size:12px;color:#cbd5e1;padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.15);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .room-scene{height:132px;margin:10px 0 10px;border-radius:var(--radius);position:relative;overflow:hidden;background:linear-gradient(#172642 0 58%,#101a30 58% 100%);border:1px solid rgba(56,189,248,.2);box-shadow:inset 0 0 22px rgba(2,6,23,.42)}
+    .room-scene:before{content:"";position:absolute;left:0;right:0;bottom:0;height:54px;background:repeating-linear-gradient(90deg,rgba(148,163,184,.11) 0 1px,transparent 1px 28px),linear-gradient(135deg,#1a2d4d,#0d1729);border-top:2px solid rgba(56,189,248,.14)}
+    .room-window{position:absolute;right:18px;top:14px;width:54px;height:36px;border:4px solid #0b1224;background:linear-gradient(135deg,rgba(56,189,248,.55),rgba(167,139,250,.28));box-shadow:0 0 16px rgba(56,189,248,.18)}
+    .room-window:before{content:"";position:absolute;left:22px;top:-4px;bottom:-4px;width:4px;background:#0b1224}.room-window:after{content:"";position:absolute;left:-4px;right:-4px;top:14px;height:4px;background:#0b1224}
+    .room-bed{position:absolute;left:12px;bottom:22px;width:78px;height:30px;background:#23385c;border:3px solid #0b1224;border-radius:6px 6px 3px 3px}
+    .room-bed:before{content:"";position:absolute;left:4px;top:4px;width:24px;height:13px;background:#e2e8f0;border-radius:3px}.room-bed:after{content:"";position:absolute;right:5px;top:5px;width:38px;height:13px;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:3px}
+    .room-desk{position:absolute;right:18px;bottom:25px;width:70px;height:28px;background:#583a28;border:3px solid #0b1224;border-radius:3px}
+    .room-desk:before{content:"";position:absolute;left:8px;right:8px;top:-15px;height:14px;background:#0b1224;border:3px solid #1e3a5f;border-bottom:0;border-radius:3px 3px 0 0}.room-desk:after{content:"";position:absolute;left:10px;bottom:-21px;width:8px;height:20px;background:#0b1224;box-shadow:42px 0 0 #0b1224}
+    .room-window,.room-bed,.room-desk,.room-aura,.room-name{z-index:2}
+    .pixel-shadow{position:absolute;left:50%;bottom:19px;width:66px;height:12px;transform:translateX(-50%);background:rgba(0,0,0,.34);border-radius:50%;z-index:3}
+    .pixel-character{position:absolute;left:50%;bottom:25px;width:52px;height:72px;transform:translateX(-50%);image-rendering:pixelated;animation:idleBob 2.6s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(16,185,129,.28));z-index:4}
+    .pixel-character:before{content:"";position:absolute;left:13px;top:3px;width:26px;height:12px;background:#1f2937;box-shadow:-5px 8px 0 #1f2937,5px 8px 0 #1f2937}
+    .pc-head{position:absolute;left:12px;top:14px;width:28px;height:24px;background:#f2c394;border:3px solid #0b1224;border-radius:2px}
+    .pc-head:before{content:"";position:absolute;left:5px;top:8px;width:4px;height:4px;background:#0b1224;box-shadow:12px 0 0 #0b1224}.pc-head:after{content:"";position:absolute;left:10px;bottom:4px;width:8px;height:3px;background:#7c2d12}
+    .pc-body{position:absolute;left:9px;top:40px;width:34px;height:24px;background:linear-gradient(135deg,var(--green),var(--blue));border:3px solid #0b1224;border-radius:2px}
+    .pc-body:before{content:"";position:absolute;left:-10px;top:3px;width:8px;height:20px;background:#f2c394;border:3px solid #0b1224;box-sizing:border-box}.pc-body:after{content:"";position:absolute;right:-10px;top:3px;width:8px;height:20px;background:#f2c394;border:3px solid #0b1224;box-sizing:border-box}
+    .pc-legs{position:absolute;left:12px;top:62px;width:10px;height:10px;background:#243b66;border:3px solid #0b1224;box-sizing:border-box;box-shadow:18px 0 0 #0b1224,18px 0 0 0 #0b1224}
+    .pc-legs:after{content:"";position:absolute;left:18px;top:-3px;width:10px;height:10px;background:#243b66;border:3px solid #0b1224;box-sizing:border-box}
+    .pixel-character[data-avatar="sword"]:after{content:"";position:absolute;right:0;top:28px;width:7px;height:38px;background:#dbeafe;border:2px solid #0b1224;transform:rotate(18deg);box-shadow:0 -6px 0 #64748b}
+    .pixel-character[data-avatar="fire"]:after{content:"";position:absolute;left:18px;top:-16px;width:16px;height:18px;background:linear-gradient(#fbbf24,#ef4444);clip-path:polygon(50% 0,80% 35%,68% 100%,32% 100%,20% 35%);filter:drop-shadow(0 0 8px rgba(251,191,36,.6))}
+    .pixel-character[data-avatar="crown"]:after{content:"";position:absolute;left:12px;top:-7px;width:28px;height:14px;background:#fbbf24;border:3px solid #0b1224;clip-path:polygon(0 100%,0 28%,24% 58%,50% 0,76% 58%,100% 28%,100% 100%)}
+    .pixel-shadow{animation:shadowRoam 7s ease-in-out infinite}
+    .pixel-character{left:24%;width:74px;height:82px;animation:roamKnight 7s ease-in-out infinite;transform-origin:50% 100%}
+    .pixel-character:before{left:18px;top:5px;width:38px;height:21px;background:#334155;border:3px solid #0b1224;border-radius:4px 4px 2px 2px;box-shadow:0 -5px 0 #64748b,8px -10px 0 #94a3b8}
+    .pc-horn{position:absolute;top:0;width:20px;height:22px;background:#e2e8f0;border:3px solid #0b1224;border-bottom:0}
+    .pc-horn.left{left:8px;clip-path:polygon(0 100%,42% 0,100% 22%,64% 100%)}
+    .pc-horn.right{right:8px;clip-path:polygon(0 22%,58% 0,100% 100%,36% 100%)}
+    .pc-cape{position:absolute;left:4px;top:31px;width:28px;height:43px;background:#991b1b;border:3px solid #0b1224;border-radius:3px;transform:skewY(-10deg);animation:capeFlutter .72s steps(2,end) infinite}
+    .pc-head{left:22px;top:24px;width:31px;height:25px;background:#f0c7a2;border:3px solid #0b1224;border-radius:3px}
+    .pc-head:before{left:7px;top:8px;width:5px;height:6px;background:#2563eb;box-shadow:13px 0 0 #38bdf8}
+    .pc-head:after{left:13px;bottom:4px;width:8px;height:3px;background:#7f1d1d}
+    .pc-helm{position:absolute;left:18px;top:18px;width:40px;height:17px;background:repeating-linear-gradient(90deg,#dbeafe 0 7px,#64748b 7px 12px);border:3px solid #0b1224;border-radius:3px 3px 1px 1px}
+    .pc-helm:after{content:"";position:absolute;right:-7px;top:7px;width:11px;height:15px;background:#dbeafe;border:3px solid #0b1224;border-left:0}
+    .pc-body{left:19px;top:50px;width:36px;height:24px;background:linear-gradient(135deg,#1e293b,#64748b);border:3px solid #0b1224}
+    .pc-body:before{left:-11px;top:3px;width:10px;height:21px;background:#475569;border:3px solid #0b1224;animation:walkArm .55s steps(2,end) infinite}
+    .pc-body:after{right:-11px;top:3px;width:10px;height:21px;background:#475569;border:3px solid #0b1224;animation:walkArm .55s steps(2,end) infinite reverse}
+    .pc-legs{left:21px;top:72px;width:12px;height:10px;background:#111827;border:3px solid #0b1224;box-shadow:none;animation:walkLeg .55s steps(2,end) infinite}
+    .pc-legs:after{left:17px;top:-3px;width:12px;height:10px;background:#111827;border:3px solid #0b1224;animation:walkLeg .55s steps(2,end) infinite reverse}
+    .pc-sword{position:absolute;right:0;top:41px;width:8px;height:43px;background:#e5e7eb;border:2px solid #0b1224;transform:rotate(38deg);transform-origin:50% 0;box-shadow:0 -7px 0 #334155}
+    .pixel-character[data-avatar="sword"]:after,.pixel-character[data-avatar="fire"]:after,.pixel-character[data-avatar="crown"]:after{z-index:4}
+    @keyframes roamKnight{0%,100%{left:24%;transform:translateX(-50%) scaleX(1) translateY(0)}12%{transform:translateX(-50%) scaleX(1) translateY(-2px)}45%{left:72%;transform:translateX(-50%) scaleX(1) translateY(0)}50%{left:72%;transform:translateX(-50%) scaleX(-1) translateY(0)}62%{transform:translateX(-50%) scaleX(-1) translateY(-2px)}95%{left:24%;transform:translateX(-50%) scaleX(-1) translateY(0)}}
+    @keyframes shadowRoam{0%,100%{left:24%;transform:translateX(-50%) scaleX(.9)}45%,50%{left:72%;transform:translateX(-50%) scaleX(1)}}
+    @keyframes capeFlutter{0%,100%{transform:skewY(-10deg) translateX(0)}50%{transform:skewY(-16deg) translateX(-2px)}}
+    @keyframes walkLeg{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+    @keyframes walkArm{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+    .pixel-character{width:92px;height:136px;bottom:18px;background-image:url("assets/knight-walk.png");background-repeat:no-repeat;background-size:552px 136px;background-position:0 0;animation:knightRoam 8s ease-in-out infinite,knightWalk .72s steps(6) infinite;filter:drop-shadow(0 8px 10px rgba(0,0,0,.38)) drop-shadow(0 0 10px rgba(16,185,129,.18))}
+    .pixel-character:before,.pixel-character:after{content:none!important}
+    .pixel-character>*{display:none}
+    .room-scene{height:178px}
+    .room-scene:before{height:66px}
+    .pixel-shadow{width:78px;height:15px;bottom:18px;animation:shadowRoamKnight 8s ease-in-out infinite}
+    @keyframes knightWalk{from{background-position:0 0}to{background-position:-552px 0}}
+    @keyframes knightRoam{0%,100%{left:25%;transform:translateX(-50%) scaleX(1)}45%{left:73%;transform:translateX(-50%) scaleX(1)}50%{left:73%;transform:translateX(-50%) scaleX(-1)}95%{left:25%;transform:translateX(-50%) scaleX(-1)}}
+    @keyframes shadowRoamKnight{0%,100%{left:25%;transform:translateX(-50%) scaleX(.9)}45%,50%{left:73%;transform:translateX(-50%) scaleX(1.05)}}
+    .room-scene[data-avatar="elephant"]{height:178px;background:linear-gradient(#7dd3fc 0 45%,#bbf7d0 45% 62%,#4ade80 62% 100%);border-color:rgba(34,197,94,.35)}
+    .room-scene[data-avatar="elephant"]:before{height:72px;background:repeating-linear-gradient(90deg,rgba(22,101,52,.32) 0 3px,transparent 3px 18px),linear-gradient(#65a30d,#15803d);border-top:2px solid rgba(255,255,255,.2)}
+    .room-scene[data-avatar="elephant"]:after{content:"";position:absolute;left:14px;right:14px;top:19px;height:34px;background:radial-gradient(circle at 18% 70%,#fff 0 9px,transparent 10px),radial-gradient(circle at 25% 62%,#fff 0 13px,transparent 14px),radial-gradient(circle at 70% 45%,rgba(255,255,255,.9) 0 10px,transparent 11px),radial-gradient(circle at 77% 45%,rgba(255,255,255,.9) 0 13px,transparent 14px);opacity:.82}
+    .room-scene[data-avatar="elephant"] .room-window,.room-scene[data-avatar="elephant"] .room-bed,.room-scene[data-avatar="elephant"] .room-desk,.room-scene[data-avatar="elephant"] .room-aura{display:none}
+    .room-scene[data-avatar="elephant"] .room-name{color:rgba(21,128,61,.78);text-shadow:0 1px 0 rgba(255,255,255,.35)}
+    .room-scene[data-avatar="elephant"] .pixel-character{width:126px;height:126px;bottom:17px;background-image:url("assets/elephant.png");background-size:100% 100%;background-position:center;background-repeat:no-repeat;animation:elephantRoam 10s ease-in-out infinite;filter:drop-shadow(0 10px 9px rgba(20,83,45,.34))}
+    .room-scene[data-avatar="elephant"] .pixel-shadow{width:98px;height:16px;bottom:17px;background:rgba(20,83,45,.28);animation:elephantShadow 10s ease-in-out infinite}
+    @keyframes elephantRoam{0%,100%{left:24%;transform:translateX(-50%) scaleX(1) translateY(0)}20%{transform:translateX(-50%) scaleX(1) translateY(-2px)}45%{left:72%;transform:translateX(-50%) scaleX(1) translateY(0)}50%{left:72%;transform:translateX(-50%) scaleX(-1) translateY(0)}70%{transform:translateX(-50%) scaleX(-1) translateY(-2px)}95%{left:24%;transform:translateX(-50%) scaleX(-1) translateY(0)}}
+    @keyframes elephantShadow{0%,100%{left:24%;transform:translateX(-50%) scaleX(.9)}45%,50%{left:72%;transform:translateX(-50%) scaleX(1.06)}}
+    .room-scene[data-avatar="city"]{height:178px;background:radial-gradient(circle at 82% 18%,rgba(251,191,36,.34) 0 10px,transparent 11px),linear-gradient(#1e3a5f 0 35%,#334155 35% 61%,#111827 61% 100%);border-color:rgba(56,189,248,.35)}
+    .room-scene[data-avatar="city"]:before{height:58px;z-index:1;background:repeating-linear-gradient(90deg,transparent 0 34px,rgba(255,255,255,.16) 34px 38px,transparent 38px 72px),repeating-linear-gradient(90deg,transparent 0 78px,rgba(251,191,36,.75) 78px 82px,transparent 82px 160px),linear-gradient(#1f2937,#0f172a);border-top:3px solid rgba(148,163,184,.32)}
+    .room-scene[data-avatar="city"]:after{content:"";position:absolute;left:0;right:0;top:24px;height:86px;z-index:1;background:linear-gradient(to top,#0f172a 0 64px,transparent 64px),repeating-linear-gradient(90deg,rgba(251,191,36,.85) 0 5px,transparent 5px 18px),repeating-linear-gradient(90deg,#1f2937 0 34px,#111827 34px 58px,#334155 58px 80px);clip-path:polygon(0 100%,0 42%,7% 42%,7% 11%,17% 11%,17% 58%,28% 58%,28% 24%,39% 24%,39% 66%,51% 66%,51% 14%,62% 14%,62% 50%,74% 50%,74% 7%,86% 7%,86% 46%,100% 46%,100% 100%);opacity:.92}
+    .room-scene[data-avatar="city"] .room-window,.room-scene[data-avatar="city"] .room-bed,.room-scene[data-avatar="city"] .room-desk,.room-scene[data-avatar="city"] .room-aura{display:none}
+    .room-scene[data-avatar="city"] .room-name{color:rgba(191,219,254,.82);text-shadow:0 1px 0 rgba(15,23,42,.6)}
+    .scene-decor{display:none}
+    .room-scene[data-avatar="city"] .scene-decor{display:block;position:absolute;inset:0;z-index:2;pointer-events:none}
+    .room-scene[data-avatar="city"] .scene-decor:before{content:"";position:absolute;left:24px;bottom:55px;width:5px;height:38px;background:#0f172a;box-shadow:166px 0 0 #0f172a}
+    .room-scene[data-avatar="city"] .scene-decor:after{content:"";position:absolute;left:17px;bottom:91px;width:18px;height:9px;border-radius:9px 9px 2px 2px;background:#fbbf24;box-shadow:0 0 14px rgba(251,191,36,.65),166px 0 0 #38bdf8,166px 0 14px rgba(56,189,248,.6),76px 26px 0 #ef4444,76px 36px 0 #fbbf24,76px 46px 0 #22c55e}
+    .room-scene[data-avatar="city"] .pixel-character{width:100px;height:143px;bottom:15px;background-image:url("assets/city-walk.png");background-size:600px 143px;background-position:0 0;background-repeat:no-repeat;animation:cityRoam 7.5s ease-in-out infinite,cityWalk .62s steps(6) infinite;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45)) drop-shadow(0 0 10px rgba(56,189,248,.14))}
+    .room-scene[data-avatar="city"] .pixel-shadow{width:66px;height:12px;bottom:16px;background:rgba(0,0,0,.38);animation:cityShadow 7.5s ease-in-out infinite}
+    @keyframes cityWalk{from{background-position:0 0}to{background-position:-600px 0}}
+    @keyframes cityRoam{0%,100%{left:24%;transform:translateX(-50%) scaleX(1) translateY(0)}45%{left:74%;transform:translateX(-50%) scaleX(1) translateY(0)}50%{left:74%;transform:translateX(-50%) scaleX(-1) translateY(0)}95%{left:24%;transform:translateX(-50%) scaleX(-1) translateY(0)}}
+    @keyframes cityShadow{0%,100%{left:24%;transform:translateX(-50%) scaleX(.9)}45%,50%{left:74%;transform:translateX(-50%) scaleX(1.05)}}
+    .room-scene[data-motion="pause"] .pixel-character,.room-scene[data-motion="pause"] .pixel-shadow,.room-scene[data-motion="pause"] .room-aura{animation-play-state:paused!important}
+    .room-name{position:absolute;left:10px;top:9px;font-size:10px;font-weight:900;letter-spacing:.12em;color:rgba(226,232,240,.62)}
+    .room-aura{position:absolute;left:50%;bottom:49px;width:72px;height:72px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.18),transparent 62%);animation:auraPulse 2.8s ease-in-out infinite}
+    @keyframes idleBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
+    @keyframes auraPulse{0%,100%{opacity:.65;transform:translateX(-50%) scale(.95)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}}
+    .xpbar{height:12px;background:rgba(2,6,23,.58);border:1px solid rgba(16,185,129,.25);border-radius:999px;overflow:hidden;margin:9px 0 6px}
+    .xpfill{height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .35s ease}
+    .tiny{font-size:12px;color:var(--muted)}
+    .currencies{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+    .chip{padding:5px 8px;border-radius:var(--radius);background:rgba(15,23,42,.74);border:1px solid rgba(148,163,184,.16);font-size:12px;color:#cbd5e1}
+    .stats{padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .stat{background:rgba(15,23,42,.62);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:8px;text-align:center;min-width:0}
+    .stat .emoji{font-size:18px}.stat .name{font-size:11px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat .lv{font-size:12px;color:var(--blue);font-weight:800}
+    .statbar{height:4px;background:#1e293b;border-radius:999px;overflow:hidden;margin-top:5px}.statbar span{display:block;height:100%;background:var(--green)}
+    .views{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+    .tab{height:38px;border-radius:var(--radius);background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.16);color:var(--muted);font-size:13px;font-weight:800}
+    .tab.active{color:var(--green);border-color:rgba(16,185,129,.5);background:rgba(16,185,129,.12)}
+    .layout{display:grid;grid-template-columns:1fr 340px;gap:12px;align-items:start}
+    .main{padding:12px}.side{display:grid;gap:12px}
+    .period{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .period-title{font-weight:900;font-size:18px}.period-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .navs{display:flex;gap:6px}
+    .progress-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+    .metric{background:rgba(15,23,42,.6);border:1px solid rgba(148,163,184,.14);border-radius:var(--radius);padding:10px;text-align:center}
+    .metric strong{display:block;font-size:20px;color:var(--green)}.metric span{font-size:11px;color:var(--muted)}
+    .daystrip{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:12px}
+    .day{min-height:56px;border-radius:var(--radius);border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.58);padding:6px;text-align:center;position:relative;overflow:hidden}
+    .day .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(16,185,129,.5),rgba(56,189,248,.2));height:0%;transition:height .3s}
+    .day .d{position:relative;font-weight:900;font-size:12px}.day .w{position:relative;font-size:10px;color:var(--muted);margin-top:2px}.day.today{border-color:var(--green);box-shadow:0 0 0 1px rgba(16,185,129,.25)}
+    .section-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}
+    .section-title{font-size:12px;letter-spacing:.16em;color:var(--muted);font-weight:900;text-transform:uppercase}
+    .btn{height:38px;border-radius:var(--radius);background:linear-gradient(135deg,var(--green),#0ea5e9);font-weight:900;padding:0 12px;font-size:13px}
+    .ghost{background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.18);color:#cbd5e1}
+    .danger{background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+    .quest-list{display:grid;gap:8px}
+    .quest{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;background:rgba(15,23,42,.62);border:1px solid rgba(56,189,248,.16);border-radius:var(--radius);padding:10px}
+    .check{width:26px;height:26px;border-radius:50%;border:2px solid rgba(16,185,129,.55);display:grid;place-items:center;color:white;font-weight:900;margin-top:1px}
+    .quest.done{opacity:.55}.quest.done .qtitle{text-decoration:line-through;color:#94a3b8}
+    .quest.done .check{background:linear-gradient(135deg,var(--green),var(--blue));border-color:transparent}
+    .qtitle{font-weight:800;word-break:break-word}.qmeta{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+    .pill{font-size:11px;padding:2px 6px;border-radius:999px;background:rgba(148,163,184,.12);color:#cbd5e1}
+    .easy{color:var(--green);background:rgba(16,185,129,.13)}.medium{color:var(--amber);background:rgba(251,191,36,.13)}.hard{color:#f87171;background:rgba(239,68,68,.13)}
+    .qactions{display:flex;gap:5px}.smallbtn{width:30px;height:30px;border-radius:var(--radius);background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.24)}
+    .empty{text-align:center;color:#64748b;padding:28px 8px;border:1px dashed rgba(148,163,184,.22);border-radius:var(--radius)}
+    .form{padding:12px;display:grid;gap:8px}
+    .focus-display{font-size:30px;font-weight:1000;letter-spacing:.05em;text-align:center;color:var(--green);text-shadow:0 0 14px rgba(16,185,129,.35);padding:8px 0}
+    .focus-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+    .achievements{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .badge-card{padding:9px;border-radius:var(--radius);background:rgba(15,23,42,.62);border:1px solid rgba(148,163,184,.14)}
+    .badge-card.locked{opacity:.42;filter:grayscale(1)}
+    .badge-card b{display:block;font-size:12px}.badge-card span{font-size:11px;color:var(--muted)}
+    .input,.select,.area{width:100%;background:rgba(15,23,42,.78);border:1px solid rgba(56,189,248,.24);border-radius:var(--radius);color:var(--text);padding:10px;outline:none}
+    .area{min-height:74px;resize:vertical}.input:focus,.select:focus,.area:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+    .twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px}.threecol{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    label.switch{display:flex;align-items:center;gap:8px;font-size:13px;color:#cbd5e1}.switch input{width:18px;height:18px;accent-color:var(--green)}
+    .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.dow{text-align:center;font-size:11px;color:var(--muted);font-weight:900;padding:6px 0}
+    .datecell{min-height:72px;border-radius:var(--radius);background:rgba(15,23,42,.56);border:1px solid rgba(148,163,184,.13);padding:6px;position:relative}
+    .datecell.other{opacity:.38}.datecell .num{font-size:12px;font-weight:900}.datecell .dots{position:absolute;left:6px;right:6px;bottom:6px;display:flex;gap:3px;flex-wrap:wrap}.dot{width:7px;height:7px;border-radius:2px;background:var(--green)}
+    .yeargrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.monthcard{padding:10px;background:rgba(15,23,42,.58);border:1px solid rgba(148,163,184,.14);border-radius:var(--radius)}
+    .monthcard strong{display:block;margin-bottom:8px}.mini{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.minidot{aspect-ratio:1;border-radius:2px;background:#1e293b}.minidot.on{background:var(--green)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}.modal.show{display:flex}
+    .modal-card{width:min(460px,100%);max-height:86vh;overflow:auto;background:linear-gradient(135deg,rgba(20,33,59,.98),rgba(11,18,36,.98));border:1px solid rgba(16,185,129,.28);border-radius:var(--radius);padding:14px}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.modal-title{font-weight:900;color:var(--green)}
+    .row{display:flex;gap:8px;align-items:center;background:rgba(15,23,42,.62);border:1px solid rgba(148,163,184,.13);border-radius:var(--radius);padding:8px;margin-bottom:8px}
+    .color{width:36px;height:36px;padding:0;border:0;background:transparent}.emoji{width:42px;text-align:center}
+    .toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%) translateY(20px);background:#10b981ee;color:white;border-radius:999px;padding:10px 14px;font-weight:900;z-index:40;opacity:0;transition:.25s;max-width:92%;text-align:center}
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);z-index:30;text-align:center;padding:18px}.overlay.show{display:flex}.big{font-size:44px;font-weight:1000;color:var(--green);text-shadow:0 0 20px rgba(16,185,129,.5)}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:rgba(8,13,27,.92);backdrop-filter:blur(12px);border-top:1px solid rgba(148,163,184,.16);z-index:10}
+    .bottom-inner{width:min(1120px,100%);margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:8px 10px}.bnav{height:48px;border-radius:var(--radius);background:transparent;color:var(--muted);font-size:11px}.bnav.active{background:rgba(16,185,129,.13);color:var(--green)}
+    canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:0}
+    @media (max-width:820px){
+      .app{padding:12px 10px 88px}.hero,.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}
+      .top{grid-template-columns:1fr}.toolbar{justify-content:flex-start}.progress-grid{grid-template-columns:repeat(2,1fr)}.yeargrid{grid-template-columns:1fr 1fr}
+      .datecell{min-height:58px;padding:5px}.twocol,.threecol{grid-template-columns:1fr}.period-title{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="app">
+  <header class="top">
+    <div>
+      <div class="brand">LIFE RPG PLANNER</div>
+      <div class="sub" id="todayText">오늘의 모험을 준비 중...</div>
+    </div>
+    <div class="toolbar">
+      <button class="iconbtn" onclick="openReport()" title="회고">📊</button>
+      <button class="iconbtn" onclick="openShop()" title="상점">🛒</button>
+      <button class="iconbtn" onclick="openSettings()" title="설정">⚙️</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="panel profile">
+      <div class="avatar" id="avatar">LV</div>
+      <div>
+        <div class="levelrow"><div class="level">LV <span id="level">1</span></div><span class="rank" id="rank">Novice</span></div>
+        <div class="hero-meta"><span class="nameplate" id="heroNamePlate">PLAYER</span><span class="motto" id="heroMotto">오늘도 한 칸 성장</span></div>
+        <div class="room-scene" id="roomScene" aria-label="내 도트 캐릭터의 방">
+          <div class="room-name" id="sceneName">MY ROOM</div>
+          <div class="scene-decor"></div>
+          <div class="room-window"></div>
+          <div class="room-bed"></div>
+          <div class="room-desk"></div>
+          <div class="room-aura"></div>
+          <div class="pixel-shadow"></div>
+          <div class="pixel-character" id="pixelCharacter">
+            <div class="pc-horn left"></div>
+            <div class="pc-horn right"></div>
+            <div class="pc-cape"></div>
+            <div class="pc-helm"></div>
+            <div class="pc-head"></div>
+            <div class="pc-body"></div>
+            <div class="pc-legs"></div>
+            <div class="pc-sword"></div>
+          </div>
+        </div>
+        <div class="xpbar"><div class="xpfill" id="xpfill"></div></div>
+        <div class="tiny"><span id="xp">0</span> / <span id="needxp">100</span> XP · 연속 <b id="streak">0</b>일</div>
+        <div class="currencies"><span class="chip" id="coins">🪙 0</span><span class="chip" id="gems">💎 0</span><span class="chip" id="completion">완료율 0%</span></div>
+      </div>
+    </div>
+    <div class="panel stats" id="stats"></div>
+  </section>
+
+  <nav class="views">
+    <button class="tab active" data-view="day" onclick="setView('day')">데일리</button>
+    <button class="tab" data-view="week" onclick="setView('week')">주간</button>
+    <button class="tab" data-view="month" onclick="setView('month')">월간</button>
+    <button class="tab" data-view="year" onclick="setView('year')">1년</button>
+  </nav>
+
+  <div class="layout">
+    <main class="panel main">
+      <div class="period">
+        <div><div class="period-title" id="periodTitle"></div><div class="period-sub" id="periodSub"></div></div>
+        <div class="navs">
+          <button class="navbtn" onclick="movePeriod(-1)">‹</button>
+          <button class="navbtn" onclick="goToday()">◎</button>
+          <button class="navbtn" onclick="movePeriod(1)">›</button>
+        </div>
+      </div>
+      <div class="progress-grid" id="metrics"></div>
+      <div id="calendarArea"></div>
+      <div class="section-head">
+        <div class="section-title" id="questTitle">QUESTS</div>
+        <button class="btn ghost" onclick="openRoutines()">루틴</button>
+      </div>
+      <div class="quest-list" id="questList"></div>
+    </main>
+    <aside class="side">
+      <section class="panel form">
+        <div class="section-title">ADD QUEST</div>
+        <input class="input" id="qTitle" placeholder="할 일 또는 계획">
+        <textarea class="area" id="qNote" placeholder="메모, 장소, 준비물"></textarea>
+        <div class="twocol">
+          <input class="input" id="qDate" type="date">
+          <input class="input" id="qTime" type="time">
+        </div>
+        <div class="threecol">
+          <select class="select" id="qCat"></select>
+          <select class="select" id="qDiff">
+            <option value="easy">쉬움 · 10XP</option>
+            <option value="medium">보통 · 25XP</option>
+            <option value="hard">어려움 · 50XP</option>
+          </select>
+          <select class="select" id="qRepeat">
+            <option value="none">반복 없음</option>
+            <option value="daily">매일 반복</option>
+            <option value="weekly">매주 반복</option>
+            <option value="monthly">매월 반복</option>
+          </select>
+        </div>
+        <button class="btn" onclick="addQuest()">+ 퀘스트 추가</button>
+      </section>
+      <section class="panel form">
+        <div class="section-head" style="margin:0">
+          <div class="section-title">CATEGORIES</div>
+          <button class="btn ghost" onclick="openCategories()">관리</button>
+        </div>
+        <div class="tiny">완료한 퀘스트의 카테고리 능력치가 같이 성장합니다.</div>
+      </section>
+      <section class="panel form">
+        <div class="section-head" style="margin:0">
+          <div class="section-title">FOCUS QUEST</div>
+          <span class="chip" id="focusTotal">0분</span>
+        </div>
+        <div class="focus-display" id="focusDisplay">25:00</div>
+        <div class="focus-actions">
+          <button class="btn" onclick="startFocus()">시작</button>
+          <button class="btn ghost" onclick="pauseFocus()">정지</button>
+          <button class="btn ghost" onclick="resetFocus()">리셋</button>
+        </div>
+        <div class="tiny">완료하면 보너스 XP와 코인을 얻습니다.</div>
+      </section>
+      <section class="panel form">
+        <div class="section-head" style="margin:0">
+          <div class="section-title">ACHIEVEMENTS</div>
+          <button class="btn ghost" onclick="openReport()">상세</button>
+        </div>
+        <div class="achievements" id="achievementList"></div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bottom-inner">
+    <button class="bnav active" data-view="day" onclick="setView('day')">☀️<br>데일리</button>
+    <button class="bnav" data-view="week" onclick="setView('week')">🗓️<br>주간</button>
+    <button class="bnav" data-view="month" onclick="setView('month')">📅<br>월간</button>
+    <button class="bnav" data-view="year" onclick="setView('year')">🏆<br>1년</button>
+    <button class="bnav" onclick="openSettings()">⚙️<br>설정</button>
+  </div>
+</nav>
+
+<div class="modal" id="catModal"><div class="modal-card">
+  <div class="modal-head"><div class="modal-title">능력치 / 카테고리 관리</div><button class="smallbtn danger" onclick="closeModal('catModal')">×</button></div>
+  <div id="catRows"></div><button class="btn" style="width:100%" onclick="addCategory()">+ 카테고리 추가</button>
+</div></div>
+
+<div class="modal" id="routineModal"><div class="modal-card">
+  <div class="modal-head"><div class="modal-title">반복 업무 관리</div><button class="smallbtn danger" onclick="closeModal('routineModal')">×</button></div>
+  <div class="tiny" style="margin-bottom:10px">매일, 매주, 매월 반복 퀘스트를 한 곳에서 관리합니다.</div>
+  <div id="routineRows"></div>
+</div></div>
+
+<div class="modal" id="settingsModal"><div class="modal-card">
+  <div class="modal-head"><div class="modal-title">설정</div><button class="smallbtn danger" onclick="closeModal('settingsModal')">×</button></div>
+  <div class="row"><div>🪪</div><div style="flex:1"><b>캐릭터 이름</b><div class="tiny">프로필에 표시됩니다.</div></div><input class="input" style="width:140px" id="heroNameInput" maxlength="12" onchange="setHeroName(this.value)"></div>
+  <div class="row"><div>💬</div><div style="flex:1"><b>오늘의 좌우명</b><div class="tiny">짧은 다짐을 남겨요.</div></div></div>
+  <input class="input" id="heroMottoInput" maxlength="28" onchange="setHeroMotto(this.value)" style="margin-bottom:8px">
+  <div class="row"><div>🎞️</div><div style="flex:1"><b>캐릭터 움직임</b><div class="tiny">집중할 때는 멈춰둘 수 있어요.</div></div><select class="select" id="motionSelect" style="width:105px" onchange="setMotion(this.value)"><option value="play">ON</option><option value="pause">OFF</option></select></div>
+  <div class="row"><div>🔊</div><div style="flex:1"><b>효과음</b><div class="tiny">완료, 레벨업, 보상 사운드</div></div><button class="btn ghost" id="soundBtn" onclick="toggleSound()">ON</button></div>
+  <div class="row"><div>🔔</div><div style="flex:1"><b>매일 알림</b><div class="tiny">브라우저가 열려 있을 때 동작</div></div><input class="input" style="width:105px" type="time" id="notifyTime" onchange="setNotifyTime(this.value)"><button class="btn ghost" id="notifyBtn" onclick="toggleNotify()">OFF</button></div>
+  <div class="row"><div>💾</div><div style="flex:1"><b>백업 / 복원</b><div class="tiny">JSON 파일로 모든 데이터를 이동</div></div></div>
+  <button class="btn" style="width:100%;margin-bottom:8px" onclick="exportData()">내보내기</button>
+  <button class="btn ghost" style="width:100%" onclick="document.getElementById('importFile').click()">가져오기</button>
+  <input id="importFile" type="file" accept=".json,application/json" hidden onchange="importData(event)">
+</div></div>
+
+<div class="modal" id="shopModal"><div class="modal-card">
+  <div class="modal-head"><div class="modal-title">상점</div><button class="smallbtn danger" onclick="closeModal('shopModal')">×</button></div>
+  <div class="tiny" id="shopMoney" style="margin-bottom:10px"></div>
+  <div class="views" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><button class="tab active" id="avatarTab" onclick="shopTab='avatar';renderShop()">아바타</button><button class="tab" id="themeTab" onclick="shopTab='theme';renderShop()">테마</button></div>
+  <div id="shopGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"></div>
+</div></div>
+
+<div class="modal" id="reportModal"><div class="modal-card">
+  <div class="modal-head"><div class="modal-title">회고 / 결산</div><button class="smallbtn danger" onclick="closeModal('reportModal')">×</button></div>
+  <div class="views" style="grid-template-columns:1fr 1fr;margin-bottom:10px"><button class="tab active" id="reportMonth" onclick="reportScope='month';renderReport()">월간</button><button class="tab" id="reportYear" onclick="reportScope='year';renderReport()">연간</button></div>
+  <div id="reportBody"></div>
+</div></div>
+
+<div class="overlay" id="levelOverlay">
+  <div><div class="big">LEVEL UP!</div><div style="font-size:24px;font-weight:900;margin:10px">LV <span id="newLevel">2</span></div><button class="btn" onclick="closeModal('levelOverlay')">CONTINUE</button></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY="life-rpg-planner-v1";
+const xpMap={easy:10,medium:25,hard:50};
+const diffName={easy:"쉬움",medium:"보통",hard:"어려움"};
+const defaultCats=[
+  {id:"health",icon:"💪",name:"건강",color:"#10b981",xp:0,level:1},
+  {id:"study",icon:"📚",name:"학습",color:"#38bdf8",xp:0,level:1},
+  {id:"work",icon:"⚔️",name:"업무",color:"#fbbf24",xp:0,level:1},
+  {id:"mind",icon:"🧘",name:"마음",color:"#a78bfa",xp:0,level:1},
+  {id:"money",icon:"🪙",name:"재정",color:"#fb7185",xp:0,level:1},
+  {id:"home",icon:"🏠",name:"생활",color:"#22c55e",xp:0,level:1}
+];
+const avatars=[
+  {id:"lv",name:"기사",emoji:"⚔️",cost:0},{id:"elephant",name:"초원 코끼리",emoji:"🐘",cost:0},{id:"city",name:"도시 러너",emoji:"🎧",cost:0},{id:"sword",name:"검",emoji:"🗡️",cost:40},{id:"fire",name:"불꽃",emoji:"🔥",cost:80},{id:"crown",name:"왕관",emoji:"👑",cost:160}
+];
+const themes=[
+  {id:"default",name:"심연",bg:"#0f172a",a:"#10b981",b:"#38bdf8",cost:0},
+  {id:"forest",name:"숲",bg:"#061b16",a:"#22c55e",b:"#84cc16",cost:70},
+  {id:"sunset",name:"노을",bg:"#1f1020",a:"#fb7185",b:"#fbbf24",cost:120},
+  {id:"arcane",name:"비전",bg:"#15112d",a:"#a78bfa",b:"#38bdf8",cost:180}
+];
+let state,view="day",cursor=new Date(),shopTab="avatar",reportScope="month",notifyTimer=null,audioCtx=null;
+let focusRemaining=25*60,focusTimer=null;
+
+function load(){
+  state=JSON.parse(localStorage.getItem(KEY)||"null")||{
+    level:1,xp:0,coins:0,gems:0,cats:structuredClone(defaultCats),quests:[],owned:["lv","default"],equipped:{avatar:"lv",theme:"default"},
+    sound:true,notify:false,notifyTime:"21:00",lastRoutine:""
+  };
+  state.cats ||= structuredClone(defaultCats); state.quests ||= []; state.owned ||= ["lv","default"]; state.equipped ||= {avatar:"lv",theme:"default"};
+  state.heroName ||= "PLAYER";
+  state.heroMotto ||= "오늘도 한 칸 성장";
+  state.motion ||= "play";
+  state.focusTotal ||= 0;
+  if (!state.owned.includes("elephant")) state.owned.push("elephant");
+  if (!state.owned.includes("city")) state.owned.push("city");
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function pad(n){return String(n).padStart(2,"0")}
+function key(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function parse(k){const [y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d)}
+function today(){return key(new Date())}
+function startOfWeek(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-x.getDay());return x}
+function endOfWeek(d){const x=startOfWeek(d);x.setDate(x.getDate()+6);return x}
+function monthStart(d){return new Date(d.getFullYear(),d.getMonth(),1)}
+function monthEnd(d){return new Date(d.getFullYear(),d.getMonth()+1,0)}
+function sameDate(a,b){return key(a)===key(b)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function cat(id){return state.cats.find(c=>c.id===id)||state.cats[0]}
+function rank(){
+  const l=state.level;
+  if(l>=50)return{t:"Legend",i:"👑",c:"#fbbf24"}; if(l>=30)return{t:"Master",i:"💎",c:"#a78bfa"}; if(l>=15)return{t:"Knight",i:"⚔️",c:"#38bdf8"}; if(l>=7)return{t:"Ranger",i:"🏹",c:"#10b981"}; return{t:"Novice",i:"🔰",c:"#94a3b8"};
+}
+function needXP(l=state.level){return 80+(l-1)*35}
+function periodRange(){
+  if(view==="day"){const d=new Date(cursor);return [key(d),key(d)]}
+  if(view==="week")return [key(startOfWeek(cursor)),key(endOfWeek(cursor))];
+  if(view==="month")return [key(monthStart(cursor)),key(monthEnd(cursor))];
+  return [`${cursor.getFullYear()}-01-01`,`${cursor.getFullYear()}-12-31`];
+}
+function inRange(q,[a,b]){return q.date>=a&&q.date<=b}
+function visibleQuests(){return state.quests.filter(q=>inRange(q,periodRange())).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))}
+function periodStats(){
+  const qs=visibleQuests(),done=qs.filter(q=>q.done),rate=qs.length?Math.round(done.length/qs.length*100):0;
+  return {total:qs.length,done:done.length,rate,xp:done.reduce((s,q)=>s+(q.xp||0),0)};
+}
+function applyRepeats(){
+  if(state.lastRoutine===today())return;
+  const now=parse(today()),last=state.lastRoutine?parse(state.lastRoutine):new Date(now.getFullYear(),now.getMonth(),now.getDate()-7);
+  const routines=state.quests.filter(q=>q.repeat&&q.repeat!=="none"&&q.source!=="routine-copy");
+  for(let d=new Date(last);d<=now;d.setDate(d.getDate()+1)){
+    const dk=key(d); if(dk<=state.lastRoutine)continue;
+    routines.forEach(r=>{
+      let due=false,base=parse(r.date);
+      if(r.repeat==="daily")due=dk!==r.date;
+      if(r.repeat==="weekly")due=d.getDay()===base.getDay()&&dk!==r.date;
+      if(r.repeat==="monthly")due=d.getDate()===base.getDate()&&dk!==r.date;
+      if(due&&!state.quests.some(q=>q.routineId===r.id&&q.date===dk)){
+        state.quests.push({...r,id:uid(),date:dk,done:false,source:"routine-copy",routineId:r.id});
+      }
+    });
+  }
+  state.lastRoutine=today(); save();
+}
+function setView(v){view=v;document.querySelectorAll(".tab[data-view],.bnav[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===v));render()}
+function movePeriod(n){if(view==="day")cursor.setDate(cursor.getDate()+n);else if(view==="week")cursor.setDate(cursor.getDate()+n*7);else if(view==="month")cursor.setMonth(cursor.getMonth()+n);else cursor.setFullYear(cursor.getFullYear()+n);render()}
+function goToday(){cursor=new Date();render()}
+
+function render(){
+  applyTheme(); renderHeader(); renderStats(); renderPeriod(); renderMetrics(); renderCalendar(); renderQuests(); renderFormCats(); renderFocus(); renderAchievements(); scheduleNotify();
+}
+function renderHeader(){
+  const r=rank(), av=avatars.find(a=>a.id===state.equipped.avatar)||avatars[0], pct=Math.min(100,Math.round(state.xp/needXP()*100));
+  document.getElementById("todayText").textContent=new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"long"});
+  const sceneLabel = state.equipped.avatar==="elephant" ? "MEADOW" : state.equipped.avatar==="city" ? "CITY" : "MY ROOM";
+  document.getElementById("avatar").textContent=av.emoji;document.getElementById("pixelCharacter").dataset.avatar=state.equipped.avatar;document.getElementById("roomScene").dataset.avatar=state.equipped.avatar;document.getElementById("sceneName").textContent=sceneLabel;document.getElementById("level").textContent=state.level;document.getElementById("rank").textContent=`${r.i} ${r.t}`;document.getElementById("rank").style.color=r.c;
+  document.getElementById("heroNamePlate").textContent=state.heroName||"PLAYER";document.getElementById("heroMotto").textContent=state.heroMotto||"오늘도 한 칸 성장";document.getElementById("roomScene").dataset.motion=state.motion||"play";
+  document.getElementById("xp").textContent=state.xp;document.getElementById("needxp").textContent=needXP();document.getElementById("xpfill").style.width=pct+"%";
+  document.getElementById("coins").textContent=`🪙 ${state.coins}`;document.getElementById("gems").textContent=`💎 ${state.gems}`;
+  document.getElementById("streak").textContent=streak();document.getElementById("completion").textContent=`완료율 ${periodStats().rate}%`;
+}
+function renderStats(){
+  document.getElementById("stats").innerHTML=state.cats.slice(0,6).map(c=>{
+    const pct=Math.min(100,Math.round((c.xp||0)/catNeed(c.level||1)*100));
+    return `<div class="stat"><div class="emoji">${esc(c.icon)}</div><div class="name">${esc(c.name)}</div><div class="lv">Lv.${c.level||1}</div><div class="statbar"><span style="width:${pct}%;background:${c.color}"></span></div></div>`;
+  }).join("");
+}
+function renderPeriod(){
+  const y=cursor.getFullYear(),m=cursor.getMonth()+1,d=cursor.getDate();
+  const titles={day:`${m}월 ${d}일`,week:`${m}월 ${startOfWeek(cursor).getDate()}일 - ${endOfWeek(cursor).getMonth()+1}월 ${endOfWeek(cursor).getDate()}일`,month:`${y}년 ${m}월`,year:`${y}년`};
+  document.getElementById("periodTitle").textContent=titles[view];
+  document.getElementById("periodSub").textContent=view==="day"?"오늘의 퀘스트":view==="week"?"이번 주 진행률":view==="month"?"월간 계획과 달성률":"연간 성장 기록";
+  document.getElementById("questTitle").textContent=view.toUpperCase()+" QUESTS";
+}
+function renderMetrics(){
+  const s=periodStats();
+  document.getElementById("metrics").innerHTML=[
+    ["전체",s.total+"개",varColor("--blue")],["완료",s.done+"개",varColor("--green")],["완료율",s.rate+"%",varColor("--amber")],["획득 XP",s.xp,varColor("--violet")]
+  ].map(x=>`<div class="metric"><strong style="color:${x[2]}">${x[1]}</strong><span>${x[0]}</span></div>`).join("");
+}
+function varColor(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function renderCalendar(){
+  const el=document.getElementById("calendarArea");
+  if(view==="day"||view==="week"){
+    const s=startOfWeek(cursor), days=["일","월","화","수","목","금","토"];
+    el.innerHTML=`<div class="daystrip">${Array.from({length:7},(_,i)=>{const d=new Date(s);d.setDate(s.getDate()+i);const qs=state.quests.filter(q=>q.date===key(d)),done=qs.filter(q=>q.done).length,p=qs.length?done/qs.length*100:0;return `<button class="day ${sameDate(d,new Date())?"today":""}" onclick="cursor=parse('${key(d)}');view='day';setView('day')"><span class="fill" style="height:${p}%"></span><div class="d">${d.getDate()}</div><div class="w">${days[i]}</div></button>`}).join("")}</div>`;
+    return;
+  }
+  if(view==="month"){
+    const first=monthStart(cursor),start=startOfWeek(first),last=monthEnd(cursor),cells=[];
+    for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);cells.push(d)}
+    el.innerHTML=`<div class="calendar">${["일","월","화","수","목","금","토"].map(w=>`<div class="dow">${w}</div>`).join("")}${cells.map(d=>{const qs=state.quests.filter(q=>q.date===key(d)),done=qs.filter(q=>q.done).length;return `<div class="datecell ${d.getMonth()!==cursor.getMonth()?"other":""} ${sameDate(d,new Date())?"today":""}" onclick="cursor=parse('${key(d)}');setView('day')"><div class="num">${d.getDate()}</div><div class="dots">${qs.slice(0,8).map(q=>`<span class="dot" style="background:${q.done?cat(q.cat).color:"#334155"}"></span>`).join("")}</div></div>`}).join("")}</div>`;
+    return;
+  }
+  el.innerHTML=`<div class="yeargrid">${Array.from({length:12},(_,m)=>{const days=new Date(cursor.getFullYear(),m+1,0).getDate(),doneDays=new Set(state.quests.filter(q=>q.done&&parse(q.date).getFullYear()===cursor.getFullYear()&&parse(q.date).getMonth()===m).map(q=>q.date));return `<div class="monthcard" onclick="cursor=new Date(${cursor.getFullYear()},${m},1);setView('month')"><strong>${m+1}월 · ${doneDays.size}일</strong><div class="mini">${Array.from({length:days},(_,i)=>`<span class="minidot ${doneDays.has(key(new Date(cursor.getFullYear(),m,i+1)))?"on":""}"></span>`).join("")}</div></div>`}).join("")}</div>`;
+}
+function renderQuests(){
+  const qs=visibleQuests(), el=document.getElementById("questList");
+  if(!qs.length){el.innerHTML=`<div class="empty">아직 퀘스트가 없습니다.<br>오른쪽에서 새 계획을 추가해보세요.</div>`;return}
+  el.innerHTML=qs.map(q=>{const c=cat(q.cat),repeat=q.repeat&&q.repeat!=="none"?` · ${q.repeat}`:"";return `<div class="quest ${q.done?"done":""}">
+    <button class="check" onclick="toggleQuest('${q.id}',event)">${q.done?"✓":""}</button>
+    <div><div class="qtitle">${esc(q.title)}</div>${q.note?`<div class="tiny" style="margin-top:4px">${esc(q.note)}</div>`:""}<div class="qmeta"><span class="pill">${q.date}${q.time?" "+q.time:""}</span><span class="pill" style="color:${c.color}">${esc(c.icon)} ${esc(c.name)}</span><span class="pill ${q.diff}">${diffName[q.diff]} · ${q.xp}XP</span>${repeat?`<span class="pill">🔁${repeat}</span>`:""}</div></div>
+    <div class="qactions"><button class="smallbtn" onclick="editQuest('${q.id}')">✎</button><button class="smallbtn danger" onclick="deleteQuest('${q.id}')">×</button></div>
+  </div>`}).join("");
+}
+function renderFormCats(){document.getElementById("qCat").innerHTML=state.cats.map(c=>`<option value="${c.id}">${c.icon} ${esc(c.name)}</option>`).join("");document.getElementById("qDate").value ||= key(cursor)}
+
+function addQuest(){
+  const title=document.getElementById("qTitle").value.trim(); if(!title)return toast("할 일을 입력해주세요",varColor("--red"));
+  const diff=document.getElementById("qDiff").value, repeat=document.getElementById("qRepeat").value;
+  state.quests.push({id:uid(),title,note:document.getElementById("qNote").value.trim(),date:document.getElementById("qDate").value||today(),time:document.getElementById("qTime").value,cat:document.getElementById("qCat").value,diff,xp:xpMap[diff],repeat,done:false});
+  save();["qTitle","qNote","qTime"].forEach(id=>document.getElementById(id).value="");document.getElementById("qRepeat").value="none";toast("퀘스트 추가 완료",varColor("--green"));render();
+}
+function toggleQuest(id,e){
+  const q=state.quests.find(x=>x.id===id); if(!q)return; q.done=!q.done;
+  if(q.done){state.xp+=q.xp; const c=cat(q.cat); c.xp=(c.xp||0)+q.xp; while(c.xp>=catNeed(c.level||1)){c.xp-=catNeed(c.level||1);c.level=(c.level||1)+1} const drop=coinDrop(q.diff);state.coins+=drop.coins;state.gems+=drop.gems;sfx(drop.gems?"gem":"complete");float(`+${q.xp} XP`,e?.clientX||innerWidth/2,e?.clientY||innerHeight/2,varColor("--green"));if(drop.gems)toast(`젬 획득! 💎 +${drop.gems}`,varColor("--violet"));levelCheck()} else {state.xp=Math.max(0,state.xp-q.xp)}
+  save();render();
+}
+function deleteQuest(id){state.quests=state.quests.filter(q=>q.id!==id);save();render()}
+function editQuest(id){const q=state.quests.find(x=>x.id===id);if(!q)return;document.getElementById("qTitle").value=q.title;document.getElementById("qNote").value=q.note||"";document.getElementById("qDate").value=q.date;document.getElementById("qTime").value=q.time||"";document.getElementById("qCat").value=q.cat;document.getElementById("qDiff").value=q.diff;document.getElementById("qRepeat").value=q.repeat||"none";deleteQuest(id);window.scrollTo({top:0,behavior:"smooth"})}
+function levelCheck(){let up=false;while(state.xp>=needXP()){state.xp-=needXP();state.level++;up=true}if(up){document.getElementById("newLevel").textContent=state.level;document.getElementById("levelOverlay").classList.add("show");state.gems++;sfx("level");burst()}}
+function catNeed(l){return 60+(l-1)*30}
+function coinDrop(diff){const r={easy:[1,5],medium:[3,10],hard:[6,18]}[diff];return{coins:r[0]+Math.floor(Math.random()*(r[1]-r[0]+1)),gems:Math.random()<.07?1:0}}
+function streak(){let n=0,d=new Date();while(true){const dk=key(d);if(state.quests.some(q=>q.date===dk&&q.done)){n++;d.setDate(d.getDate()-1)}else break}return n}
+
+function renderFocus(){
+  const m=Math.floor(focusRemaining/60),s=focusRemaining%60;
+  const display=document.getElementById("focusDisplay"),total=document.getElementById("focusTotal");
+  if(display)display.textContent=`${pad(m)}:${pad(s)}`;
+  if(total)total.textContent=`${state.focusTotal||0}분`;
+}
+function startFocus(){
+  if(focusTimer)return;
+  focusTimer=setInterval(()=>{
+    focusRemaining--;
+    renderFocus();
+    if(focusRemaining<=0)finishFocus();
+  },1000);
+  toast("집중 퀘스트 시작",varColor("--blue"));
+}
+function pauseFocus(){if(focusTimer){clearInterval(focusTimer);focusTimer=null;toast("집중 퀘스트 정지",varColor("--amber"))}}
+function resetFocus(){pauseFocus();focusRemaining=25*60;renderFocus()}
+function finishFocus(){
+  pauseFocus();focusRemaining=25*60;
+  state.focusTotal=(state.focusTotal||0)+25;state.xp+=15;state.coins=(state.coins||0)+5;
+  levelCheck();save();render();toast("집중 완료! +15 XP · +5 코인",varColor("--green"));sfx("reward");
+}
+function achievementData(){
+  const done=state.quests.filter(q=>q.done).length, cats=state.cats.filter(c=>(c.level||1)>=2).length;
+  return [
+    {icon:"✅",name:"첫 완료",desc:"퀘스트 1개 완료",ok:done>=1},
+    {icon:"🔥",name:"3일 연속",desc:"연속 3일 진행",ok:streak()>=3},
+    {icon:"⭐",name:"Lv.5",desc:"플레이어 Lv.5 달성",ok:state.level>=5},
+    {icon:"⏱️",name:"몰입 100분",desc:"집중 100분 누적",ok:(state.focusTotal||0)>=100},
+    {icon:"🌈",name:"균형 성장",desc:"능력치 3개 Lv.2",ok:cats>=3},
+    {icon:"🏆",name:"퀘스트 30",desc:"총 30개 완료",ok:done>=30}
+  ];
+}
+function renderAchievements(){
+  const el=document.getElementById("achievementList"); if(!el)return;
+  el.innerHTML=achievementData().map(a=>`<div class="badge-card ${a.ok?"":"locked"}"><b>${a.icon} ${a.name}</b><span>${a.desc}</span></div>`).join("");
+}
+
+function openCategories(){renderCatRows();show("catModal")}
+function renderCatRows(){document.getElementById("catRows").innerHTML=state.cats.map(c=>`<div class="row"><input class="input emoji" value="${esc(c.icon)}" onchange="updateCat('${c.id}','icon',this.value)"><input class="input" value="${esc(c.name)}" onchange="updateCat('${c.id}','name',this.value)"><input class="color" type="color" value="${c.color}" onchange="updateCat('${c.id}','color',this.value)"><button class="smallbtn danger" onclick="removeCat('${c.id}')">×</button></div>`).join("")}
+function updateCat(id,k,v){const c=cat(id);c[k]=v;save();render();renderCatRows()}
+function addCategory(){state.cats.push({id:uid(),icon:"✨",name:"새 영역",color:"#10b981",xp:0,level:1});save();render();renderCatRows()}
+function removeCat(id){if(state.cats.length<=1)return toast("카테고리는 1개 이상 필요합니다",varColor("--red"));state.quests.forEach(q=>{if(q.cat===id)q.cat=state.cats[0].id});state.cats=state.cats.filter(c=>c.id!==id);save();render();renderCatRows()}
+function openRoutines(){const rs=state.quests.filter(q=>q.repeat&&q.repeat!=="none"&&q.source!=="routine-copy");document.getElementById("routineRows").innerHTML=rs.length?rs.map(r=>`<div class="row"><div style="flex:1"><b>${esc(r.title)}</b><div class="tiny">${r.repeat} · ${r.date}</div></div><button class="smallbtn danger" onclick="deleteQuest('${r.id}');openRoutines()">×</button></div>`).join(""):`<div class="empty">반복 업무가 없습니다.</div>`;show("routineModal")}
+
+function openSettings(){document.getElementById("soundBtn").textContent=state.sound?"ON":"OFF";document.getElementById("notifyBtn").textContent=state.notify?"ON":"OFF";document.getElementById("notifyTime").value=state.notifyTime||"21:00";document.getElementById("heroNameInput").value=state.heroName||"PLAYER";document.getElementById("heroMottoInput").value=state.heroMotto||"오늘도 한 칸 성장";document.getElementById("motionSelect").value=state.motion||"play";show("settingsModal")}
+function setHeroName(v){state.heroName=(v||"PLAYER").trim().slice(0,12)||"PLAYER";save();render()}
+function setHeroMotto(v){state.heroMotto=(v||"오늘도 한 칸 성장").trim().slice(0,28)||"오늘도 한 칸 성장";save();render()}
+function setMotion(v){state.motion=v==="pause"?"pause":"play";save();render()}
+function toggleSound(){state.sound=!state.sound;save();openSettings()}
+function toggleNotify(){if(!state.notify){if(!("Notification" in window))return toast("알림을 지원하지 않는 브라우저입니다",varColor("--red"));Notification.requestPermission().then(p=>{if(p==="granted"){state.notify=true;save();scheduleNotify();openSettings();toast("알림이 켜졌습니다",varColor("--green"))}else toast("알림 권한이 필요합니다",varColor("--red"))})}else{state.notify=false;save();if(notifyTimer)clearTimeout(notifyTimer);openSettings()}}
+function setNotifyTime(v){state.notifyTime=v||"21:00";save();scheduleNotify()}
+function scheduleNotify(){if(notifyTimer)clearTimeout(notifyTimer);if(!state.notify||!("Notification" in window)||Notification.permission!=="granted")return;const [h,m]=(state.notifyTime||"21:00").split(":").map(Number),n=new Date(),next=new Date();next.setHours(h,m,0,0);if(next<=n)next.setDate(next.getDate()+1);notifyTimer=setTimeout(()=>{new Notification("LIFE RPG",{body:`오늘 남은 퀘스트 ${state.quests.filter(q=>q.date===today()&&!q.done).length}개`});scheduleNotify()},next-n)}
+function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download=`life-rpg-backup-${today()}.json`;a.click();URL.revokeObjectURL(a.href)}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);save();toast("복원 완료",varColor("--green"));render();closeModal("settingsModal")}catch{toast("복원 실패",varColor("--red"))}};r.readAsText(f)}
+
+function openShop(){renderShop();show("shopModal")}
+function renderShop(){
+  document.getElementById("shopMoney").textContent=`보유: 🪙 ${state.coins} · 💎 ${state.gems}`;
+  document.getElementById("avatarTab").classList.toggle("active",shopTab==="avatar");document.getElementById("themeTab").classList.toggle("active",shopTab==="theme");
+  const list=shopTab==="avatar"?avatars:themes;
+  document.getElementById("shopGrid").innerHTML=list.map(it=>{const owned=state.owned.includes(it.id)||it.cost===0,eq=(shopTab==="avatar"?state.equipped.avatar:state.equipped.theme)===it.id;return `<div class="stat" style="padding:12px"><div style="font-size:28px;margin-bottom:6px">${shopTab==="avatar"?it.emoji:"🎨"}</div><b>${esc(it.name)}</b><div class="tiny">${it.cost?`🪙 ${it.cost}`:"기본"}</div><button class="btn ${eq?"ghost":""}" style="width:100%;margin-top:8px" onclick="${owned?`equip('${shopTab}','${it.id}')`:`buy('${shopTab}','${it.id}')`}">${eq?"장착됨":owned?"장착":"구매"}</button></div>`}).join("");
+}
+function buy(type,id){const it=(type==="avatar"?avatars:themes).find(x=>x.id===id);if(state.coins<it.cost)return toast("코인이 부족합니다",varColor("--red"));state.coins-=it.cost;state.owned.push(id);equip(type,id);toast("구매 완료",varColor("--amber"))}
+function equip(type,id){if(type==="avatar")state.equipped.avatar=id;else state.equipped.theme=id;save();render();renderShop()}
+function applyTheme(){const t=themes.find(x=>x.id===state.equipped.theme)||themes[0];document.documentElement.style.setProperty("--bg",t.bg);document.documentElement.style.setProperty("--green",t.a);document.documentElement.style.setProperty("--blue",t.b)}
+
+function openReport(){renderReport();show("reportModal")}
+function renderReport(){
+  document.getElementById("reportMonth").classList.toggle("active",reportScope==="month");document.getElementById("reportYear").classList.toggle("active",reportScope==="year");
+  const now=new Date(),range=reportScope==="month"?[key(monthStart(now)),key(monthEnd(now))]:[`${now.getFullYear()}-01-01`,`${now.getFullYear()}-12-31`],qs=state.quests.filter(q=>inRange(q,range)),done=qs.filter(q=>q.done);
+  const byCat={};done.forEach(q=>byCat[q.cat]=(byCat[q.cat]||0)+1);const top=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0],c=top&&cat(top[0]);
+  document.getElementById("reportBody").innerHTML=`<div class="progress-grid"><div class="metric"><strong>${done.length}</strong><span>완료</span></div><div class="metric"><strong>${qs.length?Math.round(done.length/qs.length*100):0}%</strong><span>완료율</span></div><div class="metric"><strong>${done.reduce((s,q)=>s+q.xp,0)}</strong><span>XP</span></div><div class="metric"><strong>${new Set(done.map(q=>q.date)).size}</strong><span>활동일</span></div></div>${c?`<div class="row"><div style="font-size:28px">${c.icon}</div><div><b style="color:${c.color}">${esc(c.name)}</b><div class="tiny">가장 꾸준한 영역 · ${top[1]}개 완료</div></div></div>`:"<div class='empty'>아직 완료 기록이 없습니다.</div>"}<div class="row"><div>🔥</div><div>현재 연속 ${streak()}일 진행 중</div></div>`;
+}
+
+function show(id){document.getElementById(id).classList.add("show")}function closeModal(id){document.getElementById(id).classList.remove("show")}
+function toast(msg,color){const t=document.getElementById("toast");t.textContent=msg;t.style.background=color||"#10b981ee";t.style.opacity=1;t.style.transform="translateX(-50%) translateY(0)";clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.opacity=0,2200)}
+function float(text,x,y,color){const d=document.createElement("div");d.textContent=text;d.style.cssText=`position:fixed;left:${x-25}px;top:${y-15}px;color:${color};font-weight:900;z-index:50;pointer-events:none;transition:1s`;document.body.appendChild(d);requestAnimationFrame(()=>{d.style.transform="translateY(-70px) scale(1.2)";d.style.opacity=0});setTimeout(()=>d.remove(),1100)}
+function sfx(type){if(!state.sound)return;try{audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();const now=audioCtx.currentTime,seq={complete:[660,990],level:[523,659,784,1047],gem:[784,1047,1319]}[type]||[660];seq.forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="triangle";o.frequency.value=f;o.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(.0001,now+i*.08);g.gain.exponentialRampToValueAtTime(.13,now+i*.08+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.08+.18);o.start(now+i*.08);o.stop(now+i*.08+.2)})}catch{}}
+function burst(){const cv=document.getElementById("fx"),ctx=cv.getContext("2d");cv.width=innerWidth;cv.height=innerHeight;const ps=Array.from({length:70},()=>({x:innerWidth/2,y:innerHeight*.3,vx:(Math.random()-.5)*10,vy:(Math.random()-.5)*10,r:Math.random()*4+2,l:1,c:Math.random()>.5?varColor("--green"):varColor("--blue")}));function draw(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.l-=.025;ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});ctx.globalAlpha=1;if(ps.some(p=>p.l>0))requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height)}draw()}
+document.addEventListener("click",e=>{if(e.target.classList.contains("modal"))e.target.classList.remove("show")});
+load();applyRepeats();document.getElementById("qDate").value=today();render();
+</script>
+</body>
+</html>
